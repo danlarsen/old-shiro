@@ -1,0 +1,145 @@
+﻿use String
+use Core
+
+String   = 'String'
+Bool     = 'Bool'
+Boolean  = 'Bool'
+Num      = 'Number'
+Number   = 'Number'
+List     = 'List'
+Function = 'Function'
+Class    = 'Class'
+Object   = 'Object'
+
+NewLine  = '
+'
+
+try {
+	class IStringable = {
+		toString: def(){	
+			sConv = ""
+			for key in tuple(this) {
+				if !(this[key] is Function){
+					sConv = sConv + format('%0 = %1%2', key, this[key], NewLine)
+				}
+			}
+			return sConv
+		}
+	}
+
+	class IJsonable = {
+		toJson: def() {    return jsonFromObject(this)    }
+  
+		,fromJson: def(json) {
+			try{
+				o = jsonToObject(json)
+				baseCl = tuple(o)[0]
+				this = setBase(o[0], baseCl)
+				return this
+			} catch e {
+				return { }
+			}
+		}
+	}
+
+} catch e { }
+ 
+
+try {
+	def forAll(L is List, F is Function) {
+		for item in L {
+			F(item)
+		}
+		return L
+	}
+
+	def forAllIdx(L is List, F is Function) {
+		i = 0
+		while i < len(L) {
+			F(L, i)
+			i = i + 1
+		}
+		return L
+	}
+	
+	def applyToAll(L is List, F is Function) {
+		for item in L {
+			item = F(item)
+		}
+		return L
+	}
+
+	def allTrue(L is List) {
+		for item in L {
+			if !item {
+				return false
+			}
+		}
+		return true
+	}
+
+	def format(fmt, ...) {
+		retVal = fmt
+		i = 0
+		for item in args {
+			if args[i] =? IStringable { retVal = replace(retVal, '%' + i, args[i].toString()) }
+			else { retVal = replace(retVal, '%' + i, args[i]) }
+			i = i + 1
+		}
+		return retVal
+	}
+ 
+	def toString(obj) {
+		if obj is String{   return obj  }
+		else { 
+			if obj =? IStringable {
+				return obj.toString()
+			} else{ return obj }
+		}
+	}
+
+	def output(val, ...) {
+		s = ""
+		i = 0
+		if val is String {
+			s = val
+		} else {
+			if val =? IStringable {
+				s = val.toString()
+			}
+		}
+		for item in args {
+			s = replace(s, '%' + i, toString(args[i]))
+			i = i + 1
+		} 
+		print s
+		return s
+	}
+ 
+	def getMatch(L is List, comp is Function) {
+		retVal = {}
+		for item in L {
+			if comp(item) {
+				retVal = retVal + item
+			}
+		}
+		return retVal
+	}
+ 
+	def inList(L is List, val) {
+		for item in L{
+			if item == val{   return true  }
+		}	
+		return false
+	}
+
+	def merge(primary is Object, secondary is Object) {
+		retVal = primary
+		for key in tuple(secondary) {
+			if !inList(tuple(retVal), key) {
+				retVal = inject(retVal, key, secondary[key])
+			}
+		}
+		return retVal
+	 }
+} catch e { stdDuped = true }

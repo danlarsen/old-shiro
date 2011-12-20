@@ -1,0 +1,214 @@
+		A Brief History of Time (aka: ChangeLog)
+
+	Shiro 0.9
+
+Updated to .NET 4.0 across all projects.
+
+Finally got the reference guide in order.  This sounds a lot easier than it was, since we're dealing with 3 different partly-finished guides for 3 versions of a language that has changed significantly since any of them were written, and one that wasn't even called Shiro but Merlin.  I'd rather have to deal with that horrible for-loop scope bug from 2 years ago again than redo this effort, and it's not even that great of a guide :P.
+
+LIBRARY CHANGES:
+String:  Added lowercase() and uppercase()  (sometimes I come across shit that should have been done like 2 years ago...)
+
+Http:	FINALLY!  New Library, using Kayak to provide http server support.  Supports simple-callback dispatch and object-mapping to urls. Fr'ex:
+
+	map = {
+		Home: "Home page"
+		,Action: def(qs) { return "Action: " + qs }
+		,Sub: { Item: "SubItem" }
+		,Exit: def(qs) { httpStop() }
+	}
+
+	httpStartMapToObject(8081, map)
+
+
+Added ability to post updates from threads without them terminating and get information about their failure states/exceptions.
+
+
+BUG FIXES:
+convert formerly worked by destroying the symbol to be converted and recreating it.  This prevented, for example, converting something into the value of one of its own elements (since the symbol was destroyed by the time the assignment was processed).  Fixed.  Also fixed a convert bug wherein symbols being converted were sometimes losing their scope.
+
+Constructors were broken!  Constructing off an object in with a CTOR that took a variable number of args using … could fail to find the appropriate constructor in glorious fashion.
+
+0.81
+
+Moved the GhettoCompiler into Shiro proper instead of being in Shiro-chan.  It's now invocable.
+
+Slightly modified the ParamOp to be more streamlined and better performing.
+
+Tuples are now List<string> instead of strings, huge performance boost
+
+Reimplemented scope shifting in function calls (now uses a simple pass over the body instead of separating into two scope levels as previously).
+
+Removed define and anon (their 'alias' def is now doing double-duty for both).
+
+
+	Shiro 0.8
+
+LIBRARY CHANGES:
+Interop methods can now return void instead of string
+
+Standardized Console library (provided by Shiro-chan, shcl and executablized Shiro) to provide: cls, input, exit and emit functions.
+
+Any library function which was not formerly returning a value as a main effect will now return some representation of the value it operates on (where possible). This allows for side effect calls, like:
+
+
+BUG FIXES:
+Function call errors (usually argument mismatches of some kind) were, when dealing with anonymous functions, showing the internal name of the function (anonGUID) with the error, making debugging difficult. In all such cases where the Parser can, it will now report the helpfulName of the function (whatever name it was called with).
+
+The scanner is now accurate about line numbers, so Shiro-chan with its sexy new editor can actually go to the exact spot of the problem.
+
+The default implementation of StdOut (used by shcl/exes) was putting two spaces in front of everything it printed for some odd reason.
+
+ShiroLibs (libraries written in Shiro and included as embedded resources) are now case-insensitive when being used, just like interop libraries.
+
+
+Shiro-chan:
+
+Shiro-chan can now generate executable files from Shiro source. They actually run pretty damn fast -- faster than either Shiro-chan or shcl can manage.
+
+Complete overhaul, including Scintilla editor component with much more dependable intellisense and many more common features expected out of an IDE editor.
+
+Hideable console
+
+Better find and replace, line numbers, regex find, indentation level marking.
+
+Vastly-improved intellisense. Can even handle dot-notation (shows tuple) and different contexts (will not show keywords (except def/anon) where values are expected).
+
+
+Language:
+
+Finally caved to the peer pressure in my own head and added compound assigners (+=, -=, *=, /=, &=, |=). The scanner actually takes care of them.
+
+Classes cannot be assigned to a variable. This formerly worked, essentially instancing the class, but it lacked clarity and if using the 'class' constraint on an object, it should behave as much like its namesake as possible.
+
+Added the Parameterization Operator (@). Works almost exactly like the Execution Operator, except that it substitutes the value at the time of definition, not execution. Good example on the CoolStuff page. Only works in anonymous function declarations to prevent some truly unintelligible error conditions.
+
+
+	Shiro 0.7
+
+LIBRARY CHANGES:
+
+format and output both deal with IStringables in the args list by calling toString instead of using the default print list technique.
+
+Std: added forAllIdx, createA, getGlobal, sleep
+
+Added Thread library. I believe it to be thread safe as long as the libraries it's using are thread safe (or it stays away from library functions except built-in ones). depending on how much crap you have floating around threadStart may be slow (it clones the entire symbol table, function table and library table and works in a very paranoid manner), but as I said, it's pretty much thread-safe even for newbies to threads. Trying to call threadResult() before threadDone() returns true results in an exception.
+
+New/Expanded Libraries:
+
+	Core/Std: Added inject, merge, inList, getMatch, toString, IStringable, output
+	String: Added contains, trim
+	Assert: Added IPrintable
+
+
+Language:
+
+Added class keyword, defining a list as a class (it does not exist as an instance and cannot be accessed as a normal list).
+
+for loops can now have a where clause, allowing filtering by simple condition, or by the result of a function call.
+
+is operator now properly disambiguates between Objects, Classes and Lists. Here's the break down:
+
+	Lists are Lists, not Objects
+	Objects are Lists and Objects
+	Classes are Lists and Classes, but not Objects
+
+Introduced some clarity into protected members. You can access them using bracket notation, but not using dot notation. Basically if you choose to look at an object like an object, protected access is enforced. If you choose to treat it as a list, it's a list and it doesn't hide members.
+
+Argument type constraints can now also use =? instead of just 'is'.
+
+Objects which do not inherit are now their own base classes as far as is is concerned.
+
+Shiro-chan will now use Std when running in isolation. shcl also uses Std by default. I believe it's fair to say that including Std should be part of Shiro's specification, the stuff in there is just too useful to pass up.
+
+A function's local variables now go out of scope immediately on the return. There was a few instances where locals were getting a scope level of 0 and sticking around like bad relatives during the holidays.
+
+Added baseClass to VarSym, so now objects know what class they are without needing to use the equivalence operator (although you still can). I figure the equivalence operator will basically be more like for interfaces; also added is operator.
+
+Typed arguments! WOO HOO. Function arguments can now (optionally) specify a type using 'is'. Also refactored library in Shiro to use this where necessary. Looks like this:
+
+Changed 'anonymous' to 'anon' for brevity's sake; having no end users means screw backwards compatibility! (lol)
+
+Added tuple-assignment at list-creation, like so:
+
+                L = {name: "Dan", age: 27, sex: "Male")
+
+Removed the 'is' construct in favor of the above and...
+
+Added a 'new' keyword which instances a List (as a 'class') and can be supplied a constructor, behold:
+
+BUG FIX: GetExpressionValue (via GetBaseTerm) was eating the first string in a list if that string was a comma. This is now working (based on whether or not the Scanner marks the comma as a string). This example demonstrates:
+
+Made Shiro Library functions (written in .NET) able to handle typed arguments instead of turning everything into a string. Valid argument types are: string, double, bool, Token, int, NameValueCollection (for tuples). The Library Loader will throw appropriate type mismatches instead of depending on the library function.
+
+Refactored internal library to use typed parameters to avoid having to cast and re-cast everything.
+
+BUG FIX: for loops which were nested (via function calls or w/e) and used the same iterative element name were colliding, causing all sort of shittiness. Iterative elements now back up anything they overwrite and occur at global scope.
+
+Added Assert library and began creation of validation scripts to validate interpreter against future changes.
+
+INTERNAL CHANGES:
+
+All instances where we're dealing with nested this's are now refactored into simplicity with ThisHelper.cs.
+
+VarSym is gone, in favor of all variables being stored as Tokens. Greatly streamlined the copy process, a long overdue refactor
+
+Removed Type library and other mechanisms deprecated by the 'is' operator. Also adjusted 'is' to also work on values using the Type name constants in Std.ml. ie:
+
+
+BUG FIXES:
+
+The .../args construct was not keeping tuple/baseClass information on the arguments included in that list.
+
+The implicit this inside of class methods was behaving flakily (specifically, this was not persisting itself with the new model.
+
+
+	Shiro 0.6
+
+Added inheritance (only single).
+
+Added =? (class equivalence) operator.  Will always return false if first element is not a tupled list. Exception if the second is not valid.
+
+BUG FIX: My original choice of '?=' proved a bad one, the scanner combined ? and = into one token and fucked up the whole thing.
+
+Class members whose names are prefixed with underscore are now protected (as the 'protected' keyword).
+
+Revised error messages, removing most inappropriate mentions of 'tuple' and replacing them with 'class' and 'object' where appropriate. The underlying implementation remains the same (and will continue to), but the errors were getting really stupid as I started using more OO syntax.
+
+Inside a class/tuple function, the this. is implied.
+
+Fixed scoping and function-call scoping: this solves the problem with the for loop in allTrue losing its value on the 2nd execution due to scope (among other problems). Tested: Basics, allTrue + the std library, Recursion via a Factorial function, and all cases are functioning!
+
+Added ability to include Shiro files as Embedded Resource and access them via the in-language 'use' keyword (like Std.ml)
+
+Added Std library (forAll, applyToAll, allTrue, format, argsToList)
+
+Added anonymous keyword + functionality for closures/lambdas, like this:
+
+Added anonymous arguments, which are passed into the function via a list named 'args', like so:
+
+Compound Conditions (omg, how did I go this long without remembering these?) via the & (and) and | (or) operators.
+
+New/Expanded Libraries:
+	SQL: Access SQL databases by DSN
+	SockServer: Basic TCP/IP socket server
+	Core: added getUid() function (gets a Guid)
+
+
+Shiro-chan:
+	BUG FIX: Shiro-chan was having some strange times trying to open and close the Symbols window multiple times.
+
+	Added F6/Execute Selection and Shift-F6/Execute Selection Isolated menu options
+
+	Added defined functions to intellisense and syntax highlighting for same.
+
+	Optimized loading to only use Std (thus including Core and String) and the Console bindings
+	
+	Added Symbols Window
+	
+	Added dbg() function (basically a break point):
+
+	        print dbg('hello world')
+        	dbg('break point 1')
+
+	Added a DoEvents break to Shiro-chan's StdOut function (so that each print statement now prints in the correct time instead of being buffered).

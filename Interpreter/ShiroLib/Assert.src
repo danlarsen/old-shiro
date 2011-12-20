@@ -1,0 +1,56 @@
+﻿use Std
+use String
+
+assert = {
+  output: def(text){
+    print '[ASSERT] ' + text		# This function can be overridden to do different things
+  }
+  
+  ,isTrue: def(val, desc){
+    if !val{ this.output("Failed (not true): " + desc) }
+    return val
+  }
+      
+  ,isFalse: def(val, desc){
+    if val{     this.output("Failed (not false): " + desc) }
+    return val
+   }
+      
+  ,exists: def(val is String){
+    if !~val?{      this.output("Failed (doesn't exist): " + val)  }
+    return val
+  }
+          
+  ,doesNotExist: def(val is String) {
+    if ~val? {      this.output("Failed (exists): " + val)  }
+    return val
+  }
+          
+  ,returns: def(expected, val){
+    if val != expected{
+      this.output("Failed (return value): '" + expected + "' was expected, '" + val + "' was found.")
+    }
+    return expected 
+  }
+  ,eq: def(expected, val){
+    if val != expected{
+      this.output("Failed (not equal): '" + expected + "' was expected, '" + val + "' was found.")
+    }
+    return expected 
+  }
+    
+  ,notCalled: def(desc){
+    this.output("Failed (unexpected execution path): " + desc);
+    return desc
+  }
+    
+  ,hadException: def(desc, action is Function){
+    try{
+      action()
+    } catch ex {
+      return true
+    } else {
+      this.output('Failed (did not have Exception): ' + desc)
+    }
+  }
+}
