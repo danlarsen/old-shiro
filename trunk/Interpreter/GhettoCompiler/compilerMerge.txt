@@ -1,0 +1,57 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Shiro;
+using Shiro.Interop;
+
+namespace SemiCompiled
+{
+    [ShiroClass("Console", KeepClassLoaded = false)]
+	public class Program
+    {
+        [ShiroMethod("exit", 0)]
+        public static void ExitApp()
+        {
+            
+        }
+
+        [ShiroMethod("cls", 0)]
+        public static void Cls()
+        {
+            Console.Clear();
+        }
+
+        [ShiroMethod("input", 0)]
+        public static string GetInput()
+        {
+            return Console.ReadLine();
+        }
+
+        [ShiroMethod("emit", 1)]
+        public static string MsgBox(string msg)
+        {
+            Console.WriteLine(msg);
+            return msg;
+        }
+		
+		static void Main(string[] args)
+        {
+			string DQ = "\"";
+			string code = ##CODE## ;
+            ShiroInterpret interpreter = new ShiroInterpret();
+
+            try
+			{
+				interpreter.Execute("use Std");
+				interpreter.Execute("use Console");
+				interpreter.Execute(code);
+			}
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+			Console.WriteLine(Environment.NewLine + "Press Enter to exit");
+			Console.ReadLine();
+        }
+    }
+}
