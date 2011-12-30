@@ -63,7 +63,7 @@ namespace ShiroChan
         [ShiroMethod("help", 0)]
         public static void showHelp()
         {
-            ShiroInt.Execute("executeApp('http://code.google.com/p/merlin-interpreter/wiki/LearnMerlin')");
+            ShiroInt.Execute("executeApp('http://www.shirodev.com/')");
         }
 
         [ShiroMethod("input", 0)]
