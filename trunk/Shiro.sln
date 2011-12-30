@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiro", "Interpreter\Shiro.csproj", "{8EAC9C71-2BE6-47E9-B8CD-C20512BD7CA9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shcl", "shcl\shcl.csproj", "{EAD3172B-3A56-4B02-8150-7C2904BEE28F}"
@@ -8,8 +8,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiroChan", "ShiroChan\ShiroChan.csproj", "{FB26B808-354F-43D9-8344-0040691B5F26}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kayak", "Kayak\Kayak.csproj", "{79DDD0CE-6F79-4212-A972-8618AD6E405F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website", "Website\Website.csproj", "{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,16 +59,6 @@ Global
 		{79DDD0CE-6F79-4212-A972-8618AD6E405F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{79DDD0CE-6F79-4212-A972-8618AD6E405F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{79DDD0CE-6F79-4212-A972-8618AD6E405F}.Release|x86.ActiveCfg = Release|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{CC8CFB54-68EA-43BC-9044-545A0F1CDD24}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
