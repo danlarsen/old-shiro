@@ -10,7 +10,7 @@ namespace Shiro.Interpreter
                                         "finally", "throw", "select", "option", "break", "twice", "thrice",
                                         "convert", "def", "return", "use", "run", "new", "is", "then" };
 
-        protected string[] operators = { "+", "-", "*", "/", "^", "=", "!", "%", "&", "|", "?", "~", "@" };
+        protected string[] operators = { "+", "-", "*", "/", "^", "=", "!", "%", "&", "|", "?", "~", "@", ":" };
         protected string[] conditionalOperators = { ">", "<", "==", "!=", "<>", ">=", "<=" };
         protected string[] opsToRecombine = { "==", "!=", "<>", "<=", ">=", ":=", "=?" };
         protected string[] compoundAssigners = { "+=", "-=", "*=", "/=", "&=", "|=" };
