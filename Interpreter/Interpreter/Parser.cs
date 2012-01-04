@@ -826,9 +826,55 @@ namespace Shiro.Interpreter
             return work;
         }
 
+        protected Token GetTernaryLevelExpression()
+        {
+            Token work = GetComparisonCompound();
+            Token toke;
+            bool keepRunning = true;
+
+            while (keepRunning)
+            {
+                toke = PeekToken();
+                if (toke == null)
+                {
+                    keepRunning = false;
+                    continue;
+                }
+
+                switch (toke.token)
+                {
+                    case "?":
+                        PopToken();
+                        if (comb.Not(comb.Not(work)).token == "true")
+                        {
+                            work = GetExpressionValue();
+                            if (!PeekAndDestroy(":"))
+                                Error.ReportError("Ternary operator must include colon");
+                            GetExpressionValue();
+
+                        }
+                        else
+                        {
+                            GetExpressionValue();
+                            if (!PeekAndDestroy(":"))
+                                Error.ReportError("Ternary operator must include colon");
+                            else
+                                work = GetExpressionValue();
+                        }
+                        break;
+
+                    default:
+                        keepRunning = false;
+                        return work;
+                }
+            }
+
+            return work;
+        }
+
         protected Token GetExpressionValue()
         {
-            return GetComparisonCompound();
+            return GetTernaryLevelExpression();
         }
         #endregion
 
