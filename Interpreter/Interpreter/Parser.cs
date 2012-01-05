@@ -549,6 +549,88 @@ namespace Shiro.Interpreter
 				}
 			}
 
+			//Check for in-line assignments
+			if (PeekAndDestroy("="))
+			{
+				if (PeekAndDestroy("new"))
+					retVal = ParseNew();
+				else
+				{
+					retVal = GetExpressionValue();
+					if (retVal.isClass)
+						Error.ReportError("You cannot assign a class to a variable.  Please use new to instance it.");
+				}
+
+				bool processed = false;
+				if (SymbolTable.IsInTable(toke.token))
+				{
+					if (SymbolTable.GetSymbolType(toke.token) != retVal.vt)
+					{
+						Error.ReportError("Type mismatch, '" + toke.token + "' is a " + SymbolTable.GetSymbolType(toke.token).ToString()
+											+ ", not a " + retVal.vt.ToString() + ".  Check out the 'convert' keyword");
+					}
+				}
+				else
+				{
+					if (SymbolTable.IsInTable("this"))
+					{
+						Token vs = SymbolTable.table["this"].Clone();
+						int index = SymbolTable.GetTupleIndexInline(vs.list, vs.tuple, toke.token, false);
+
+						if (index != -1 && vs.list[index].vt == retVal.vt)
+						{
+							processed = true;
+							SymbolTable.table["this"].list[index] = retVal.Clone();
+						}
+					}
+				}
+
+				if (!processed)
+					if (retVal.vt == ValueType.List)
+					{
+						List<string> tuple = new List<string>(retVal.tuple.ToArray());
+						SymbolTable.CreateListSymbol(toke.token, SymbolTable.scope, retVal.list, tuple, retVal.baseClass);
+
+						//Root classes are their own base classes
+						if (tuple != null && tuple.Count > 0 && string.IsNullOrEmpty(SymbolTable.table[toke.token].baseClass))
+							SymbolTable.table[toke.token].baseClass = toke.token;
+
+					}
+					else
+						SymbolTable.CreateSymbol(toke.token, SymbolTable.scope, retVal.vt, retVal.token);
+
+				return retVal;
+			}
+			else if (PeekAndDestroy(":="))
+			{
+				//Assignment with inheritance.
+				string baseTupleName = PopToken().token;
+				List<string> otherTuples = new List<string>();
+
+				while (PeekAndDestroy(","))
+					otherTuples.Add(PopToken().token);
+
+				Token newTuple = GetBaseElement();
+				if (newTuple.vt != ValueType.List)
+					Error.ReportError("Only a list or class may inherit, not a '" + newTuple.tt.ToString() + "'");
+
+				if (SymbolTable.IsInTable(toke.token))
+					if (SymbolTable.GetSymbolType(toke.token) != ValueType.List)
+					{
+						Error.ReportError("Type mismatch, '" + toke.token + "' is a " + SymbolTable.GetSymbolType(toke.token).ToString()
+											+ ", not a List.");
+					}
+
+				newTuple = comb.InheritTuple(newTuple, baseTupleName, SymbolTable);
+				newTuple.baseClass = baseTupleName;
+
+				//Multiple inheritance doesn't change the base class but does otherwise work
+				foreach (string otherBase in otherTuples)
+					newTuple = comb.InheritTuple(newTuple, otherBase, SymbolTable);
+
+				SymbolTable.CreateListSymbol(toke.token, SymbolTable.scope, newTuple.list, newTuple.tuple, newTuple.baseClass);
+			}
+
 			while (true)
 			{
 				if (PeekAndDestroy("["))
@@ -1252,160 +1334,6 @@ namespace Shiro.Interpreter
 			return retVal;
 		}
 
-		//Anything that starts with a name (function calls, assignment, etc.)
-		protected Token ParseRootName(Token rootToken)
-		{
-			Token retVal = rootToken.Clone();						//Contains value
-			retVal.tt = TokenType.Value;
-
-			if (SymbolTable.IsClass(rootToken.token))
-				if(PeekToken().token != "[")
-					Error.ReportError("Classes can only be instanced, their members cannot be accessed.  Found '" + rootToken.token + "' at root level.");
-
-			if (PeekAndDestroy("="))
-			{
-				if (PeekAndDestroy("new"))
-					retVal = ParseNew();
-				else
-				{
-					retVal = GetExpressionValue();
-					if (retVal.isClass)
-						Error.ReportError("You cannot assign a class to a variable.  Please use new to instance it.");
-				}
-
-				bool processed = false;
-				if (SymbolTable.IsInTable(rootToken.token))
-				{
-					if (SymbolTable.GetSymbolType(rootToken.token) != retVal.vt)
-					{
-						Error.ReportError("Type mismatch, '" + rootToken.token + "' is a " + SymbolTable.GetSymbolType(rootToken.token).ToString()
-											+ ", not a " + retVal.vt.ToString() + ".  Check out the 'convert' keyword");
-					}
-				}
-				else
-				{
-					if (SymbolTable.IsInTable("this"))
-					{
-						Token vs = SymbolTable.table["this"].Clone();
-						int index = SymbolTable.GetTupleIndexInline(vs.list, vs.tuple, rootToken.token, false);
-
-						if (index != -1 && vs.list[index].vt == retVal.vt)
-						{
-							processed = true;
-							SymbolTable.table["this"].list[index]= retVal.Clone();
-						}
-					}
-				}
-
-				if(!processed)
-					if (retVal.vt == ValueType.List)
-					{
-						List<string> tuple = new List<string>(retVal.tuple.ToArray());
-						SymbolTable.CreateListSymbol(rootToken.token, SymbolTable.scope, retVal.list, tuple, retVal.baseClass);
-						
-						//Root classes are their own base classes
-						if (tuple != null && tuple.Count > 0 && string.IsNullOrEmpty(SymbolTable.table[rootToken.token].baseClass))
-							SymbolTable.table[rootToken.token].baseClass = rootToken.token;
-
-					}
-					else
-						SymbolTable.CreateSymbol(rootToken.token, SymbolTable.scope, retVal.vt, retVal.token);
-
-				return retVal;
-			}
-			else if (PeekAndDestroy(":="))
-			{
-				//Assignment with inheritance.
-				string baseTupleName = PopToken().token;
-				List<string> otherTuples = new List<string>();
-
-				while (PeekAndDestroy(","))
-					otherTuples.Add(PopToken().token);
-
-				Token newTuple = GetBaseElement();
-				if (newTuple.vt != ValueType.List)
-					Error.ReportError("Only a list or class may inherit, not a '" + newTuple.tt.ToString() + "'");
-
-				if (SymbolTable.IsInTable(rootToken.token))
-					if (SymbolTable.GetSymbolType(rootToken.token) != ValueType.List)
-					{
-						Error.ReportError("Type mismatch, '" + rootToken.token + "' is a " + SymbolTable.GetSymbolType(rootToken.token).ToString()
-											+ ", not a List.");
-					}
-
-				newTuple = comb.InheritTuple(newTuple, baseTupleName, SymbolTable);
-				newTuple.baseClass = baseTupleName;
-
-				//Multiple inheritance doesn't change the base class but does otherwise work
-				foreach (string otherBase in otherTuples)
-					newTuple = comb.InheritTuple(newTuple, otherBase, SymbolTable);
-
-				SymbolTable.CreateListSymbol(rootToken.token, SymbolTable.scope, newTuple.list, newTuple.tuple, newTuple.baseClass);
-			}
-			else if (PeekAndDestroy("("))
-			{
-				//Function call.  Huh...
-				if (!SymbolTable.IsInFTab(rootToken.token))
-				{
-					if (!SymbolTable.IsInTable(rootToken.token) || (SymbolTable.GetSymbolType(rootToken.token) != ValueType.Function))
-						if (SymbolTable.IsInTable("this"))
-						{
-							Token vs = SymbolTable.table["this"].Clone();
-							int index = SymbolTable.GetTupleIndexInline(vs.list, vs.tuple, rootToken.token, false);
-
-							if (index == -1 || vs.list[index].vt != ValueType.Function)
-								Error.ReportError("Unknown function '" + rootToken.token + "' found at root.");                               
-						} else
-							Error.ReportError("Unknown function '" + rootToken.token + "' found at root.");
-				}
-
-				List<Token> vals = new List<Token>();
-				while (!PeekAndDestroy(")"))
-				{
-					vals.Add(GetExpressionValue());
-					PeekAndDestroy(",");
-				}
-				retVal = ParseFunctionCall(rootToken.token, vals);
-			}
-			else if (PeekAndDestroy("["))
-			{
-				//List assignment (complex enough to get its own sub function)
-				retVal = ParseListAssignment(rootToken.token, false);
-			}
-			else if (PeekAndDestroy("."))
-			{
-				Token neg = null;
-				Token tupe = PopToken();
-				//This is kind of a hack, but it's fast and it works
-				if (tupe.tt == TokenType.Name)
-				{
-					tupe.tt = TokenType.Value;
-					tupe.vt = ValueType.String;
-				}
-				else if (tupe.token == "-")
-				{
-					neg = tupe;
-					tupe = PopToken();
-					if (tupe.vt != ValueType.Number)
-						Error.ReportError("Class access operator (.) used with invalid element '-" + tupe.token + "'");
-
-				}
-				PushToken(Token.FromString("]"));
-				PushToken(tupe);
-				if (neg != null)
-					PushToken(neg);
-
-				retVal = ParseListAssignment(rootToken.token, true);
-			}
-			else
-			{
-				Error.ReportError("Expected assignment or function call after name '" + rootToken.token + "' found instead.");
-				return default(Token);
-			}
-			
-			return retVal;
-		}
-
 		//convert <name>=<value>
 		protected void ParseConvert()
 		{
@@ -1795,7 +1723,7 @@ namespace Shiro.Interpreter
 
 			if (rootToken.tt == TokenType.Name)
 			{
-				retVal = ParseRootName(rootToken);
+				retVal = ParseName(rootToken);
 			}
 			else if (rootToken.tt == TokenType.Keyword)
 			{
@@ -1843,7 +1771,7 @@ namespace Shiro.Interpreter
 						if (next.tt != TokenType.Name)
 							Error.ReportError("class definition must be followed by a name, not, '" + next.token + "'");
 
-						retVal = ParseRootName(next);
+						retVal = ParseName(next);
 						SymbolTable.table[next.token].isClass = true;
 						SymbolTable.table[next.token].scope = 0;        //Classes, like static functions, always occur at global scope
 						return retVal;
