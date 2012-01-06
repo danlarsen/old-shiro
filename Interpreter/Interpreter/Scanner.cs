@@ -12,7 +12,7 @@ namespace Shiro.Interpreter
 
         protected string[] operators = { "+", "-", "*", "/", "^", "=", "!", "%", "&", "|", "?", "~", "@", ":" };
         protected string[] conditionalOperators = { ">", "<", "==", "!=", "<>", ">=", "<=" };
-        protected string[] opsToRecombine = { "==", "!=", "<>", "<=", ">=", ":=", "=?" };
+        protected string[] opsToRecombine = { "==", "!=", "<>", "<=", ">=", ":=", "=?", "??" };
         protected string[] compoundAssigners = { "+=", "-=", "*=", "/=", "&=", "|=" };
         protected string[] symbols = { ":", ".", ",", "(", ")", "[", "]", "{", "}", ";" };
 
