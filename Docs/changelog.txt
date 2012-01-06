@@ -23,11 +23,19 @@ Http:	FINALLY!  New Library, using Kayak to provide http server support.  Suppor
 
 Added ability to post updates from threads without them terminating and get information about their failure states/exceptions.
 
+Added Ternary Operator (? :)
+
+Changed existence operator from <name>? to <name>??.  This prevents an ambiguous parsing scenario with the new ternary operator and makes the existence operator fit better into the expression parser.
+
+Removed ParseRootName and combined it with ParseName, giving us the ability to do assignments, definitions and other such coolness in-expression, and also allowing me to not have to maintain what was basically the same function in two places.  Yay cleanup.
+
 
 BUG FIXES:
 convert formerly worked by destroying the symbol to be converted and recreating it.  This prevented, for example, converting something into the value of one of its own elements (since the symbol was destroyed by the time the assignment was processed).  Fixed.  Also fixed a convert bug wherein symbols being converted were sometimes losing their scope.
 
 Constructors were broken!  Constructing off an object in with a CTOR that took a variable number of args using … could fail to find the appropriate constructor in glorious fashion.
+
+break was behaving oddly (by design).  It now mirrors the more traditional sort of break (ie, you no longer break out of if statements and functions just because they're scope levels.  Also cleaned up scoping in the scanner.
 
 0.81
 
