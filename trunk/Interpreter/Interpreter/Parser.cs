@@ -42,7 +42,7 @@ namespace Shiro.Interpreter
 						m_tokens.RemoveAt(0);
 						Token value = GetExpressionValue();
 
-						List<Token> newTokes = new Scanner().Scan(Token.Tokenize(SymbolTable.GetSymbolValue(value.ToString())));
+						List<Token> newTokes = new Scanner().Scan(Token.Tokenize(value.ToString()));
 						for (int i = 0; i < newTokes.Count; i++)
 							newTokes[i].scope += SymbolTable.scope;
 						m_tokens.InsertRange(0, newTokes);
@@ -160,7 +160,7 @@ namespace Shiro.Interpreter
 			Expected("{");
 			while (m_tokens.Count > 0 && !done)
 			{
-				if (PeekToken().token == "}")
+				if (PeekToken(false).token == "}")
 				{
 					nestCount -= 1;
 					if (nestCount < 0)
@@ -170,7 +170,7 @@ namespace Shiro.Interpreter
 						continue;
 					}
 				}
-				else if (PeekToken().token == "{")
+				else if (PeekToken(false).token == "{")
 					nestCount += 1;
 
 				Token toke = PopToken(false);
@@ -682,18 +682,6 @@ namespace Shiro.Interpreter
 						SymbolTable.table[oName] = th.UnstoreThis(SymbolTable);
 					}
 				}
-				else if (PeekAndDestroy("?"))
-				{
-					retVal.vt = ValueType.Bool;
-					if (SymbolTable.IsInTable(toke.token))
-						retVal.token = "true";
-					else if (SymbolTable.IsInFTab(toke.token))
-						retVal.token = "true";
-					else if (retVal.tt == TokenType.Name)
-						retVal.token = "false";
-					else
-						retVal.token = "true";
-				}
 				else if (PeekAndDestroy("$"))
 				{
 					retVal.tt = TokenType.Value;
@@ -952,6 +940,17 @@ namespace Shiro.Interpreter
 							else
 								work = GetExpressionValue();
 						}
+						break;
+
+					case "??":
+						PopToken();
+						work.vt = ValueType.Bool;
+						if (SymbolTable.IsInTable(work.token))
+							work.token = "true";
+						else if (SymbolTable.IsInFTab(work.token))
+							work.token = "true";
+						else
+							work.token = "false";
 						break;
 
 					default:

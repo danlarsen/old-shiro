@@ -4,25 +4,26 @@ use Console
 
 #Basic Existence Checks
 def BasicExistence() {
-  #assert.exists(abs$)		#in Std
-  #assert.doesNotExist(testF$)
+  assert.exists(abs$)		#in Std
+  assert.doesNotExist(testF$)
 
   def testF() { print 'hello world' }
 
-  #assert.exists(testF$)		#function definition
+  assert.exists(testF$)		#function definition
   assert.returns('hello world', testF())	#side-effect function returns
 
-  #assert.doesNotExist(testNum$)
-  #assert.exists(StringType$)
+  assert.doesNotExist(testNum$)
+  assert.exists(String$)
  
   testNum = 123
-  #assert.exists(testNum$)
+  assert.exists(testNum$)
   free(testNum$)
-  #assert.doesNotExist(testNum$)
+  assert.doesNotExist(testNum$)
+  testNum = 321   #test GC in next function
 }
 
 def Operations() {
-  #assert.doesNotExist(testNum$)		#test garbage collection after scope-change
+  assert.doesNotExist(testNum$)		#test garbage collection after scope-change
   testNum = 123
 
   #cannot add number and function  
