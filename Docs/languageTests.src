@@ -250,6 +250,19 @@ def Documentation() {
 	assert.isFalse(Dan is IStringable, "multi-inheritance is operator (2)")
 	assert.isTrue(Dan =? IStringable, "multi-inheritance quack operator (1)")
 	assert.isTrue(Dan =? Person, "multi-inheritance quack operator (2)")
+	
+	o2 = {name: ""}
+	class c2 = { name: ""}
+	assert.isTrue(o2 is Object & o2 is List, "object/class/list typing (1)")
+	assert.isTrue(c2 is Class & c2 is List, "object/class/list typing (2)")
+	assert.isFalse(o2 is Class | c2 is Object, "object/class/list typing (3)")
+
+	o2 = {_prot: "Dan"}
+	assert.hadException("Can't access protecteds using dot notation", def() {
+			o2._prot = "Bob"
+	})
+	o2[_prot$] = "Bob"
+	assert.returns("Bob", o2[_prot$])
 }
 
 def SyntaxInjection() {

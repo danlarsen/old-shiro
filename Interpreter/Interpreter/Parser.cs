@@ -30,6 +30,16 @@ namespace Shiro.Interpreter
 		{
 			return PopToken(true);
 		}
+
+		protected string LookAheadPast(string terminator)
+		{
+			for (int i = 0; i < m_tokens.Count; i++)
+				if (m_tokens[i].token == terminator && m_tokens.Count > i + 1)
+					return m_tokens[i + 1].token;
+
+			return "";
+		}
+
 		protected Token PopToken(bool ProcessPound)
 		{
 			if (m_tokens.Count > 0)
@@ -533,7 +543,6 @@ namespace Shiro.Interpreter
 			retVal.tt = TokenType.Value;
 			if (SymbolTable.IsInTable(oName))
 			{
-
 				if (SymbolTable.IsClass(oName))
 				{
 					string lookAhead = PeekToken().token;
@@ -672,7 +681,11 @@ namespace Shiro.Interpreter
 			{
 				if (PeekAndDestroy("["))
 				{
-					retVal = ListIndexerParser(retVal, false);
+					string s = "";
+					if ((s = LookAheadPast("]")) == "=" || s == ":=")
+						retVal = ParseListAssignment(toke.token, false);
+					else
+						retVal = ListIndexerParser(retVal, false);
 				}
 				else if (PeekAndDestroy("("))
 				{
@@ -739,7 +752,12 @@ namespace Shiro.Interpreter
 					PushToken(tupe);
 
 					currentThis = retVal;
-					retVal = ListIndexerParser(retVal, true);
+
+					string s = "";
+					if ((s = LookAheadPast("]")) == "=" || s == ":=")
+						retVal = ParseListAssignment(toke.token, true);
+					else
+						retVal = ListIndexerParser(retVal, true);
 				}
 				else
 				{
