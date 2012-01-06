@@ -176,12 +176,117 @@ def BugFixes(){
   assert.returns(-1, Z)
 }
 
+#code from the quick start guide and other documentation
+def Documentation() {
+	X = 123
+	assert.hadException('type mismatch (doc1)', def() {	X = 'Hello world' })
+	convert X = 'hello world'    	
+	assert.hadException('type mismatch (doc2)', def() { X = 123	})
+	assert.isTrue(X is String, "is check(1)")
+	assert.isFalse(X is Number, "is check (2)")
+
+	O = { name: 'Dan', age: 28 }
+	assert.returns("Dan", O.name)
+
+	Fib = def(x is Number) {
+		if x <= 1 { return 1 }
+		return Fib(x-1) + Fib(x-2)
+	}
+
+	L = {1,2,3,4,5,6,7,8,9,10}
+	result = {}
+	forAll(L, def(i is Number) { result += Fib(i) })
+	assert.returns(result, {1,2,3,5,8,13,21,34,55,89})
+	
+	#note that if this was an anonymous function we have a problem because it
+	# tries to apply retVal before the argument has been appropriated (ie, when
+	# the functional is called).  This is why only lambdas can have ParamOps.
+	def CreateAFunctionThatReturns(retVal){
+		return def() { return @retVal }
+	}
+	F1 = CreateAFunctionThatReturns(1)
+	F2 = CreateAFunctionThatReturns("Hello world")	
+	assert.returns(1, F1())
+	assert.returns("Hello world", F2())
+
+	def HowManyArgs(...) {
+		return len(args)
+	}
+	assert.returns(3, HowManyArgs(1,2,"Dan was here"))
+	
+	class Person = {
+	    name: ""
+	    ,age: 0
+	    ,Person: def(n,a) {
+	        name = n  age = a
+	    }
+	}
+	class PrintablePerson := Person, IStringable {
+	    printIt: def(){
+	      print this.toString()
+	    }
+	    ,PrintablePerson: def(n,a) {
+	      this.Person(n,a)
+	    }
+	}
+
+	dan = new Person('Dan', 27)
+	bob = new PrintablePerson('Bob', 40)
+
+	assert.returns('Dan', dan.name)
+	assert.returns("Bob", bob.name)
+	
+	assert.isTrue(dan is Person, "class-based is operator (1)")
+	assert.isTrue(bob is Person, "class-based is operator (2)")
+	assert.isTrue(bob is PrintablePerson, "class-based is operator (3)")
+	assert.isFalse(dan is PrintablePerson, "class-based is operator (4)")
+	
+	assert.hadException("Class assignment", def() { Person.name = "Dan" })
+	
+	Dan := Person, IStringable {
+	  gender: "Male"
+	}
+	assert.isTrue(Dan is Person, "multi-inheritance is operator (1)")
+	assert.isFalse(Dan is IStringable, "multi-inheritance is operator (2)")
+	assert.isTrue(Dan =? IStringable, "multi-inheritance quack operator (1)")
+	assert.isTrue(Dan =? Person, "multi-inheritance quack operator (2)")
+}
+
+def SyntaxInjection() {
+  Increment = def(v) {
+	~v = (~v) + 1
+  }
+  X = 1
+  Y = 10
+
+  Increment(X$)
+  assert.returns(2, X)
+  Increment('Y')
+  assert.returns(11, Y)
+  
+  def getp(o, propName is String){
+	return o~('.' + propName)
+  }
+  thing = {name: "bob", age: 22}
+  assert.returns("bob", getp(thing, "name"))
+  assert.returns(22, getp(thing, "age"))
+  
+  X = 123
+  F1 = def() { return ~X }
+  F2 = def() { return @X }
+  X = 999
+
+  assert.returns(999, F1())   # the *current* value of X
+  assert.returns(123, F2())   # the value of X at the time F2 was defined
+}
+
 #Execution starts here
 cls()
 print "---- Starting Tests ----
 "
 
-Tests = { BasicExistence, Operations, ControlFlow, ListIndexing, BugFixes }
+Tests = { BasicExistence, Operations, ControlFlow, ListIndexing, 
+			BugFixes, Documentation, SyntaxInjection }
 
 for test in Tests { 
 	print test

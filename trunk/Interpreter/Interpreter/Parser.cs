@@ -40,12 +40,30 @@ namespace Shiro.Interpreter
 					if (m_tokens[0].token == "~")
 					{
 						m_tokens.RemoveAt(0);
-						Token value = GetExpressionValue();
-
-						List<Token> newTokes = new Scanner().Scan(Token.Tokenize(value.ToString()));
-						for (int i = 0; i < newTokes.Count; i++)
-							newTokes[i].scope += SymbolTable.scope;
-						m_tokens.InsertRange(0, newTokes);
+						Token value = default(Token);
+						if (PeekToken(false).token == "(")
+						{
+							value = GetExpressionValue();
+							List<Token> newTokes = new Scanner().Scan(Token.Tokenize(value.ToString()));
+							for (int i = 0; i < newTokes.Count; i++)
+								newTokes[i].scope += SymbolTable.scope;
+							m_tokens.InsertRange(0, newTokes);
+						}
+						else
+						{
+							string name = PopToken().token;
+							if (SymbolTable.IsInTable(name))
+							{
+								List<Token> newTokes = new Scanner().Scan(Token.Tokenize(SymbolTable.GetSymbolValue(name)));
+								for (int i = 0; i < newTokes.Count; i++)
+									newTokes[i].scope += SymbolTable.scope;
+								m_tokens.InsertRange(0, newTokes);
+							}
+							else
+							{
+								Error.ReportError("Cannot use Execution Operator (~) with a nonexistant symbol like '" + name + "'.  If you intended to use an expression, put the value after the tilde in parenthesis (ie:  ~('hello' + 'world')");
+							}
+						}
 					}
 				}
 				Token ret = m_tokens[0];
@@ -69,12 +87,30 @@ namespace Shiro.Interpreter
 					if (m_tokens[0].token == "~")
 					{
 						m_tokens.RemoveAt(0);
-						Token value = GetExpressionValue();
-
-						List<Token> newTokes = new Scanner().Scan(Token.Tokenize(value.ToString()));
-						for (int i = 0; i < newTokes.Count; i++)
-							newTokes[i].scope += SymbolTable.scope;
-						m_tokens.InsertRange(0, newTokes);
+						Token value = default(Token);
+						if (PeekToken(false).token == "(")
+						{
+							value = GetExpressionValue();
+							List<Token> newTokes = new Scanner().Scan(Token.Tokenize(value.ToString()));
+							for (int i = 0; i < newTokes.Count; i++)
+								newTokes[i].scope += SymbolTable.scope;
+							m_tokens.InsertRange(0, newTokes);
+						}
+						else
+						{
+							string name = PopToken().token;
+							if (SymbolTable.IsInTable(name))
+							{
+								List<Token> newTokes = new Scanner().Scan(Token.Tokenize(SymbolTable.GetSymbolValue(name)));
+								for (int i = 0; i < newTokes.Count; i++)
+									newTokes[i].scope += SymbolTable.scope;
+								m_tokens.InsertRange(0, newTokes);
+							}
+							else
+							{
+								Error.ReportError("Cannot use Execution Operator (~) with a nonexistant symbol like '" + name + "'.  If you intended to use an expression, put the value after the tilde in parenthesis (ie:  ~('hello' + 'world')");
+							}
+						}
 					}
 				}
 				
@@ -629,6 +665,7 @@ namespace Shiro.Interpreter
 					newTuple = comb.InheritTuple(newTuple, otherBase, SymbolTable);
 
 				SymbolTable.CreateListSymbol(toke.token, SymbolTable.scope, newTuple.list, newTuple.tuple, newTuple.baseClass);
+				retVal = newTuple.Clone();
 			}
 
 			while (true)
