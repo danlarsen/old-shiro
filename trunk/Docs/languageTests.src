@@ -26,9 +26,9 @@ def Operations() {
   testNum = 123
 
   #cannot add number and function  
-  assert.hadException('type mismatch', def():
+  assert.hadException('type mismatch', def() {
     return testNum + abs		
-  )
+  })
   
   #Test Recursion
   def myFactorial(x) {
@@ -57,13 +57,12 @@ def Operations() {
   
   #Function type
   F = myFactorial
-  assert.isTrue(canCall(F$), "Function Type")
-  assert.isTrue((type(F) == FunctionType), "Function Type (2)")
+  assert.isTrue((type(F) == Function), "Function Type (2)")
   assert.returns(120, F(5))
 
   #Type Mismatch
   assert.hadException('assignment type mismatch', def() { F = 123 })
-  assert.isTrue((type(F) == FunctionType), "Function Type (3)")
+  assert.isTrue((type(F) == Function), "Function Type (3)")
 }
 
 def ControlFlow() {
@@ -110,6 +109,7 @@ def ControlFlow() {
       option "One" { X = 1 }
       option "Two" { X = 2 }
       option else  { X = 3 }
+	}
     return X
   }
   
@@ -137,6 +137,7 @@ def ControlFlow() {
 	}
   }
   assert.returns(3, X)
+}
 
 def ListIndexing() {
 	L = {1,2,3,4,5, 6, 7,8} 
@@ -151,7 +152,7 @@ def ListIndexing() {
 	assert.returns({2,3,4}, -L[3 to 1])
 }
 
-def BugFixes():
+def BugFixes(){
   L = '1,2|3' / {',', '|'}
   assert.returns(3, len(L))
   assert.isTrue((L == {1,2,3}), "Not eating ',' in lists")
@@ -167,18 +168,24 @@ def BugFixes():
     X = item
   }
   assert.returns(2, X)
+  
+  #Assignment-as-expression
+  X = 1   Y = 2
+  if((Z = X - Y) > 0) { assert.notCalled("subtraction is broken??") }
+  assert.returns(-1, Z)
+}
 
 #Execution starts here
 cls()
 print "---- Starting Tests ----
 "
+
 Tests = { BasicExistence, Operations, ControlFlow, ListIndexing, BugFixes }
 
 for test in Tests { 
 	print test
 	test()
 }
-
 
 print "
 ---- Tests complete! ----"
