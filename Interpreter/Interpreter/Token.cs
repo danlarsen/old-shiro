@@ -143,30 +143,32 @@ namespace Shiro.Interpreter
             retVal.tt = TokenType.Value;
             retVal.vt = ValueType.String;
 
-            if (double.TryParse(s, out l))
-            {
-                retVal.vt = ValueType.Number;
-                retVal.isNumericLong = false;
-            }
-            else if (long.TryParse(s, out l2))
-            {
-                retVal.vt = ValueType.Number;
-                retVal.isNumericLong = true;
-            }
-            else if (s == "true" || s == "false")
-                retVal.vt = ValueType.Bool;
-            else if (s.Contains(" | "))
-            {
-                retVal.vt = ValueType.List;
-                retVal.list = new List<Token>();
-                string[] eles = s.Split(new string[] { " | " }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string ele in eles)
-                {
-                    retVal.list.Add(new Token(ele, ValueType.String));
-                }
+			if (double.TryParse(s, out l))
+			{
+				retVal.vt = ValueType.Number;
+				retVal.isNumericLong = false;
+			}
+			else if (long.TryParse(s, out l2))
+			{
+				retVal.vt = ValueType.Number;
+				retVal.isNumericLong = true;
+			}
+			else if (s == "true" || s == "false")
+				retVal.vt = ValueType.Bool;
+			else if (s == "}" || s == "{")
+				retVal.tt = TokenType.Symbol;
+			else if (s.Contains(" | "))
+			{
+				retVal.vt = ValueType.List;
+				retVal.list = new List<Token>();
+				string[] eles = s.Split(new string[] { " | " }, StringSplitOptions.RemoveEmptyEntries);
+				foreach (string ele in eles)
+				{
+					retVal.list.Add(new Token(ele, ValueType.String));
+				}
 
-                return retVal;
-            }
+				return retVal;
+			}
 
             retVal.token = s;
             return retVal;

@@ -21,14 +21,19 @@ namespace Shiro.Interpreter
 
         public Token UnstoreThis(SymbolTable st)
         {
-            Token ret = st.table["this"].Clone();
-            
-            if (oldThis != null)
-                st.CreateListSymbol("this", oldScope, oldThis, oldTuple, oldBase);
-            else
-                st.RemoveSymbol("this");
+			try
+			{
+				Token ret = st.table["this"].Clone();
 
-            return ret;
+				if (oldThis != null)
+					st.CreateListSymbol("this", oldScope, oldThis, oldTuple, oldBase);
+				else
+					st.RemoveSymbol("this");
+
+				return ret;
+			} catch (Exception ex) {
+				return Token.FromString("");
+			}
         }
 
         public ThisHelper(SymbolTable st)

@@ -675,7 +675,7 @@ namespace Shiro.Interpreter
 					{
 						ThisHelper th = new ThisHelper(SymbolTable);
 
-						SymbolTable.CreateListSymbol("this", 0, currentThis.list, currentThis.tuple, currentThis.baseClass);
+						SymbolTable.CreateListSymbol("this", 0, SymbolTable.table[oName].list, SymbolTable.table[oName].tuple, SymbolTable.table[oName].baseClass);
 
 						retVal = ParseFunctionCall(retVal.token, vals);
 
@@ -1095,8 +1095,11 @@ namespace Shiro.Interpreter
 
 				if (returned)
 					break;
-				if (_breakToScope != -1)
+				if (_timesToBreak > 0)
+				{
+					_timesToBreak -= 1;
 					break;
+				}
 			}
 
 			if (oldIterator != null)
@@ -1135,15 +1138,14 @@ namespace Shiro.Interpreter
 				if (returned)
 					break;
 
-				if (_breakToScope == -1)
+				if (_timesToBreak > 0)
 				{
-					m_tokens.InsertRange(0, new List<Token>(condition.ToArray()));
-					evaluatedCondition = comb.Not(comb.Not(GetExpressionValue()));
-				}
-				else
-				{
+					_timesToBreak -= 1;
 					break;
 				}
+
+				m_tokens.InsertRange(0, new List<Token>(condition.ToArray()));
+				evaluatedCondition = comb.Not(comb.Not(GetExpressionValue()));
 			}
 
 			return retVal;
@@ -1261,19 +1263,19 @@ namespace Shiro.Interpreter
 		//break [twice | thrice]
 		protected void ParseBreak()
 		{
-			int newscope = SymbolTable.scope;
+			int timesToBreak = 0;
 
 			if (PeekAndDestroy("twice"))
-				newscope -= 2;
+				timesToBreak = 2;
 			else if (PeekAndDestroy("thrice"))
-				newscope -= 3;
+				timesToBreak = 3;
 			else
-				newscope--;
+				timesToBreak = 1;
 
-			if (newscope < SymbolTable.Globalscope)
+			if (SymbolTable.scope - timesToBreak < SymbolTable.Globalscope)
 				Error.ReportError("Attempted to break beyond global scope.  Are you sure you needed a 'twice' or 'thrice' there?");
 
-			_breakToScope = newscope;
+			_timesToBreak = timesToBreak;
 		}
 
 		#endregion
@@ -1681,7 +1683,7 @@ namespace Shiro.Interpreter
 				}
 
 				for (int i = 0; i < body.Count; i++)
-					body[i].scope += SymbolTable.scope;
+				    body[i].scope += SymbolTable.scope + 1;
 
 				retVal = ParseInternal(body, true);
 
@@ -1882,7 +1884,7 @@ namespace Shiro.Interpreter
 			return ParseInternal(tokes, false);
 		}
 
-		protected int _breakToScope = -1;
+		protected int _timesToBreak = -1;
 		protected Token ParseInternal(List<Token> argTokes, bool isFunctionCall)
 		{
 			Token ret = Token.FromString("");
@@ -1898,14 +1900,9 @@ namespace Shiro.Interpreter
 
 				while (m_tokens != null && m_tokens.Count > 0 && !returned)
 				{
-					if (_breakToScope != -1)
-					{
-						while (m_tokens.Count > 0 && m_tokens[0].scope > _breakToScope)
-							PopToken();
+					if (_timesToBreak > 0)
+						m_tokens.Clear();
 
-						if (m_tokens.Count > 0)
-							_breakToScope = -1;
-					}
 					if(m_tokens.Count > 0)
 						ret = ParseRoot();
 				}
