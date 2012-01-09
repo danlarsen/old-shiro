@@ -351,4 +351,6 @@ for test in Tests {
 }
 
 print "
----- Tests complete! ----"
+Results: " + assert.assertCount + " assertions, " + assert.failCount + " failures.
+---- Complete! ----
+"
