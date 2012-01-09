@@ -153,6 +153,24 @@ def ListIndexing() {
 	assert.returns({2,3,4}, -L[3 to 1])
 }
 
+def Types() {
+	n = 123
+	s = "bob"
+	o = {name: "dan"}
+	l = {1,2,3}
+	b = true
+
+	f = def() {    print "Hello world"    }
+	vals = {n, s, o, l, b, f}
+	types = {Num, String, Object, List, Bool, Function}
+	notTypes = {String, List, String, Object, Num, Object}
+	forAllIdx(vals, def(list, i) {
+		checkTrue = types[i] checkFalse = notTypes[i]
+		assert.isTrue(list[i] is ~checkTrue, 'is check ' + types[i])
+		assert.isFalse(list[i] is ~checkFalse, 'is check (false) ' + types[i])
+	})
+}
+
 def BugFixes(){
   L = '1,2|3' / {',', '|'}
   assert.returns(3, len(L))
@@ -177,7 +195,7 @@ def BugFixes(){
 }
 
 #code from the quick start guide and other documentation
-def Documentation() {
+def Documentation1() {
 	X = 123
 	assert.hadException('type mismatch (doc1)', def() {	X = 'Hello world' })
 	convert X = 'hello world'    	
@@ -200,7 +218,7 @@ def Documentation() {
 	
 	#note that if this was an anonymous function we have a problem because it
 	# tries to apply retVal before the argument has been appropriated (ie, when
-	# the functional is called).  This is why only lambdas can have ParamOps.
+	# the function is called).  This is why only lambdas can have ParamOps.
 	def CreateAFunctionThatReturns(retVal){
 		return def() { return @retVal }
 	}
@@ -267,7 +285,7 @@ def Documentation() {
 
 def SyntaxInjection() {
   Increment = def(v) {
-	~v = (~v) + 1
+	~v = ~v + 1
   }
   X = 1
   Y = 10
@@ -293,13 +311,39 @@ def SyntaxInjection() {
   assert.returns(123, F2())   # the value of X at the time F2 was defined
 }
 
+def Documentation2() {
+	B = { name: createA(String) }
+	C := B, IStringable {
+			name: "Dan"
+			,age: 27
+	}
+	C.toString = def() { return "My name is " + name }
+
+	assert.isFalse(C is IStringable, "multiple inheritance with mixins")
+	assert.isTrue(C =? IStringable, "multiple inheritence with mixins (quackop)")
+	
+	C = {name: "Dan"}
+	assert.hadException("object munging(1)", def() { C.age = 25 })
+	assert.hadException("object munging(2)", def() { C[age$] = 25 })
+	
+	Person = {
+			Name: "dan"
+			_age: 27
+	}
+
+	Person = inject(Person, 'getAge', def() {
+		return _age
+	})
+	assert.returns(27, Person.getAge())
+}
+
 #Execution starts here
 cls()
 print "---- Starting Tests ----
 "
 
-Tests = { BasicExistence, Operations, ControlFlow, ListIndexing, 
-			BugFixes, Documentation, SyntaxInjection }
+Tests = { BasicExistence, Operations, Types, ControlFlow, ListIndexing, 
+			BugFixes, Documentation1, SyntaxInjection, Documentation2 }
 
 for test in Tests { 
 	print test
