@@ -11,38 +11,38 @@ assert = {
   }
   
   ,isTrue: def(val, desc){
-	this.incCnt()
+	incCnt()
 	if !val{ this.output("Failed (not true): " + desc) }
 	return val
   }
 	  
   ,isFalse: def(val, desc){
-	this.incCnt()
+	incCnt()
 	if val{     this.output("Failed (not false): " + desc) }
 	return val
    }
   
   ,exists: def(val is String) {
-	this.incCnt()
+	incCnt()
 	if !val?? {      this.output("Failed (doesn't exist): " + val)  }
 	return val
   }
 		  
   ,doesNotExist: def(val is String) {
-	this.incCnt()
+	incCnt()
 	if val?? { this.output("Failed (exists): " + val)  }
 	return val
   }
 
   ,returns: def(expected, val){
-	this.incCnt()
+	incCnt()
 	if val != expected{
 	  this.output("Failed (return value): '" + expected + "' was expected, '" + val + "' was found.")
 	}
 	return expected 
   }
   ,eq: def(expected, val){
-	this.incCnt()
+	incCnt()
 	if val != expected{
 	  this.output("Failed (not equal): '" + expected + "' was expected, '" + val + "' was found.")
 	}
@@ -55,7 +55,7 @@ assert = {
   }
 	
   ,hadException: def(desc, action is Function){
-	this.incCnt()
+	incCnt()
 	try{
 	  action()
 	} catch ex {
