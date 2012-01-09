@@ -1484,8 +1484,10 @@ namespace Shiro.Interpreter
 			Token name = PopToken();
 			if (name.tt != TokenType.Name)
 				Error.ReportError("Invalid function name: '" + name.token + "'");
+			
+			//DLL -- I've decided this isn't really an error.  LOL
 			if (SymbolTable.IsInFTab(name.token))
-				Error.ReportError("Duplicate function definition, '" + name.token + "' (if you're trying to make an 'include file', try wrapping your defines in try blocks or using conditionals)");
+				SymbolTable.RemoveFunction(name.token);
 
 			Expected("(");
 			List<ArgSym> varNames = new List<ArgSym>();
@@ -1629,7 +1631,7 @@ namespace Shiro.Interpreter
 			//  2)  A function variable
 			//  3)  A function accessible via implicit this
 			if (!SymbolTable.IsInFTab(name))
-				if (SymbolTable.IsInTable(name))
+				if (SymbolTable.IsInTable(name) && SymbolTable.table[name].vt == ValueType.Function)
 					name = SymbolTable.GetSymbolValue(name);        //Function type variable
 				else
 				{
