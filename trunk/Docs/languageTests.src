@@ -192,6 +192,13 @@ def BugFixes(){
   X = 1   Y = 2
   if((Z = X - Y) > 0) { assert.notCalled("subtraction is broken??") }
   assert.returns(-1, Z)
+  
+  #lost implicit this for function calls
+  O = {
+	F: def() {return 123},
+	F2: def() { return F()}
+  }
+  assert.eq(123, O.F2())
 }
 
 #code from the quick start guide and other documentation

@@ -151,19 +151,13 @@ namespace Shiro.Interpreter
 		}
 		protected bool PeekAndDestroy(string expected, bool processPound = true)
 		{
-			try
+			Token t = PeekToken(processPound);
+			if (t != null && t.token == expected)
 			{
-				if (PeekToken(processPound).token == expected)
-				{
-					PopToken(processPound);
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+				PopToken(processPound);
+				return true;
 			}
-			catch (Exception)
+			else
 			{
 				return false;
 			}
@@ -724,12 +718,13 @@ namespace Shiro.Interpreter
 					else
 					{
 						ThisHelper th = new ThisHelper(SymbolTable);
-
-						SymbolTable.CreateListSymbol("this", 0, SymbolTable.table[oName].list, SymbolTable.table[oName].tuple, SymbolTable.table[oName].baseClass);
+						string listName = toke.token;
+						if(SymbolTable.table.ContainsKey(listName) && SymbolTable.table[listName].IsObject)
+							SymbolTable.CreateListSymbol("this", 0, SymbolTable.table[listName].list, SymbolTable.table[listName].tuple, SymbolTable.table[listName].baseClass);
 
 						retVal = ParseFunctionCall(retVal.token, vals);
 
-						SymbolTable.table[oName] = th.UnstoreThis(SymbolTable);
+						SymbolTable.table[listName] = th.UnstoreThis(SymbolTable);
 					}
 				}
 				else if (PeekAndDestroy("$"))
