@@ -232,17 +232,6 @@ namespace Shiro.Libraries
             return ret;
         }
         
-        //[ShiroMethod("jsonFromObject", 1)]
-        //public static string getJson(Token obj)
-        //{
-        //    StringBuilder ret = new StringBuilder("{\"" + obj.baseClass+ "\": ");
-        //    ret.Append(json_fromToken(obj));
-        //    ret.Append("}");
-
-        //    return ret.ToString().Replace("\"\"", "\"");
-
-        //}
-
         [ShiroMethod("jsonFromObject", 1)]
         public static string getJson(Token obj)
         {

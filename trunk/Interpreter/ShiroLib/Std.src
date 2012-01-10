@@ -42,10 +42,7 @@ try {
 		}
 	}
 
-} catch e { }
- 
 
-try {
 	def forAll(L is List, F is Function) {
 		for item in L {
 			F(item)
