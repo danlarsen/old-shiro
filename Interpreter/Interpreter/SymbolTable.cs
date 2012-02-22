@@ -40,6 +40,8 @@ namespace Shiro.Interpreter
 		public List<ArgSym> args;
 		public List<Token> body;
 
+		public int RefCount = 0;
+
 		public bool isLibraryFunction;
 
 		public FuncSym Clone()
@@ -48,6 +50,7 @@ namespace Shiro.Interpreter
 			fs.args = args;
 			fs.body = Token.CloneList(body);
 			fs.isLibraryFunction = isLibraryFunction;
+			fs.RefCount = RefCount;		
 			return fs;
 		}
 	}
@@ -73,7 +76,7 @@ namespace Shiro.Interpreter
 			set
 			{
 				_scope = value;
-				KillToscope(_scope);
+				KillToScope(_scope);
 			}
 		}
 
@@ -85,8 +88,16 @@ namespace Shiro.Interpreter
 		}
 
 		public Dictionary<string, Token> table = new Dictionary<string, Token>();
-		public Dictionary<string, FuncSym> fTab = new Dictionary<string, FuncSym>();
+		private Dictionary<string, FuncSym> fTab = new Dictionary<string, FuncSym>();
 		public LibraryTable libTab = null;
+
+		public  Dictionary<string, FuncSym> BackDoorFunctionTable
+		{
+			get
+			{
+				return fTab;
+			}
+		}
 
 		#region Namespace
 
@@ -323,7 +334,7 @@ namespace Shiro.Interpreter
 			return tups.IndexOf(index);
 		}
 
-		public void KillToscope(int scope)
+		public void KillToScope(int scope)
 		{
 			if (scope < 0)
 				scope = 0;
@@ -334,7 +345,11 @@ namespace Shiro.Interpreter
 
 				foreach (string key in table.Keys)
 					if (table[key].scope > scope)
+					{
 						keysToDelete.Add(key);
+						if (table[key].vt == ValueType.Function)
+							KillFunctionRefCount(table[key].token);
+					}
 
 				foreach (string delete in keysToDelete)
 					table.Remove(delete);
@@ -373,6 +388,24 @@ namespace Shiro.Interpreter
 				return false;
 			else
 				return libTab.Functions.ContainsKey(name);
+		}
+
+		public void AddFunctionRefCount(string name)
+		{
+			if (!IsInFTab(name))
+				Error.ReportError("Function '" + name + "' had reference count incremented but does not exist");
+			else
+				fTab[name].RefCount += 1;
+		}
+		public void KillFunctionRefCount(string name)
+		{
+			if (!IsInFTab(name))
+				Error.ReportError("Function '" + name + "' had reference count decremented but does not exist");
+			else
+				fTab[name].RefCount -= 1;
+
+			if (fTab[name].RefCount <= 0)
+				fTab.Remove(name);
 		}
 
 		public bool LoadLibrary(string library)

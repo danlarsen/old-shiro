@@ -616,6 +616,9 @@ namespace Shiro.Interpreter
 						Token vs = SymbolTable.table["this"].Clone();
 						int index = SymbolTable.GetTupleIndexInline(vs.list, vs.tuple, toke.token, false);
 
+						if(retVal.vt == ValueType.Function)
+							SymbolTable.AddFunctionRefCount(retVal.token);
+
 						if (index != -1 && vs.list[index].vt == retVal.vt)
 						{
 							processed = true;
@@ -633,10 +636,14 @@ namespace Shiro.Interpreter
 						//Root classes are their own base classes
 						if (tuple != null && tuple.Count > 0 && string.IsNullOrEmpty(SymbolTable.table[toke.token].baseClass))
 							SymbolTable.table[toke.token].baseClass = toke.token;
-
 					}
 					else
+					{
+						if (retVal.vt == ValueType.Function)
+							SymbolTable.AddFunctionRefCount(retVal.token);
+
 						SymbolTable.CreateSymbol(toke.token, SymbolTable.scope, retVal.vt, retVal.token);
+					}
 
 				return retVal;
 			}
