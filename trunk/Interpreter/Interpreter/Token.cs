@@ -121,7 +121,7 @@ namespace Shiro.Interpreter
         protected static char[] Terminators = { '+', '-', '*', '/', '^', 
                                          '(', ')', '[', ']', '{', '}', '|', '=', '%',
                                          '@', '!', '~', ':', ';', '?', '$', '#', '&',
-                                         '\\', '>', '<', '.', ',', '"', '\'', ' ' };
+                                         '\\', '>', '<', '.', ',', '"', '\'', ' ', '\t' };
 
         public static Token FromString(List<string> list)
         {
