@@ -170,6 +170,9 @@ def BugFixes(){
   }
   assert.returns(2, X)
   
+  assert.returns("MLC works", ("MLC" + #> multi line comment
+	here <# " works"))
+  
   #Assignment-as-expression
   X = 1   Y = 2
   if((Z = X - Y) > 0) { assert.notCalled("subtraction is broken??") }

@@ -208,10 +208,11 @@ namespace ShiroChan
 		private void SetUpTextBox(Scintilla tb)
 		{
 			tb.Margins[0].Width = 30;
-			tb.ConfigurationManager.Language = "cs";        //close enough for now
-			tb.Lexing.SetKeywords(0, "if to for in else print while try catch where class finally throw select option break twice thrice convert def return use run new is");
+			tb.ConfigurationManager.Language = "";        //close enough for now
+			tb.Lexing.SetKeywords(0, "if to for in else print while try catch where class finally throw select option break twice thrice convert def return use run new is then");
 			tb.Lexing.LineCommentPrefix = "#";
-			//tb.Lexing.LineComment();
+			tb.Lexing.StreamCommentPrefix = "#>";
+			tb.Lexing.StreamCommentSufix = "<#";
 			tb.Indentation.ShowGuides = true;
 			tb.Indentation.SmartIndentType = SmartIndent.CPP2;
 
