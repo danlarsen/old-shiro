@@ -25,7 +25,6 @@ namespace Shiro.Libraries
         internal static Http ActiveHttp;
 
         internal static IScheduler scheduler;
-        
 
         [ShiroMethod("httpStartInt", 2)]
         public void httpStart(int port, Token callback)
