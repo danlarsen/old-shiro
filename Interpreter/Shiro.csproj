@@ -68,8 +68,6 @@
     <Compile Include="Interop\ReflectionAttrs.cs" />
     <Compile Include="Interop\SQLite.cs" />
     <Compile Include="Interpreter\ThisHelper.cs" />
-    <Compile Include="Libraries\DB.cs" />
-    <Compile Include="Libraries\Http.cs" />
     <Compile Include="Libraries\Thread.cs" />
     <Compile Include="Libraries\Core.cs" />
     <Compile Include="Libraries\SQL.cs" />
@@ -127,18 +125,6 @@
     <EmbeddedResource Include="GhettoCompiler\compilerMerge.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kayak\Kayak.csproj">
-      <Project>{79DDD0CE-6F79-4212-A972-8618AD6E405F}</Project>
-      <Name>Kayak</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ShiroLib\Http.src" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SciLexer.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="sqlite3.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
