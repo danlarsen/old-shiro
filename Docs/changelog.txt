@@ -1,5 +1,11 @@
 		A Brief History of Time (aka: ChangeLog)
 
+	Shiro 0.9.1
+
+Removed dead, partly-finished and non-functional libraries, upgraded VS, streamlined and simplified for future build-out.
+
+Added SQLite library that actually works and object persistance
+
 	Shiro 0.9
 
 Updated to .NET 4.0 across all projects.

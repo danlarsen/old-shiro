@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Text;
+using System.IO;
 
 using Shiro.Interpreter;
 using Shiro.Interop;
@@ -14,6 +15,126 @@ namespace Shiro.Libraries
     {
 		protected Dictionary<int, SqlConnection> conns = new Dictionary<int, SqlConnection>();
         protected int LastIndex = 0;
+        protected SQLiteConnection sqLiteCon = null;
+
+        #region SQLite
+
+        [ShiroMethod("dbOpen", 1)]
+        public bool dbOpen(string path)
+        {
+            if (sqLiteCon != null)
+                return false;
+
+            if (!System.IO.File.Exists(path))
+                SQLiteConnection.CreateFile(path);
+
+            sqLiteCon = new SQLiteConnection("Data Source=" + path + ";Version=3;");
+            sqLiteCon.Open();
+            dbExec(@"CREATE TABLE IF NOT EXISTS shiroObjectStore (ID varchar(24), Value TEXT, Tuple TEXT)");
+
+            return true;
+        }
+
+        [ShiroMethod("dbClose", 0)]
+        public bool dbClose()
+        {
+            if (sqLiteCon == null)
+                return false;
+            
+            sqLiteCon.Close();
+            sqLiteCon = null;
+            return true;
+        }
+
+        [ShiroMethod("dbSave", 2)]
+        public bool dbSave(string id, Token obj)
+        {
+            if (sqLiteCon == null)
+                return false;
+
+            string tuple = "";
+            foreach (var t in obj.tuple)
+                tuple += t + " | ";
+
+            dbExec(string.Format("Insert into shiroObjectStore (ID, Value, Tuple) Values ('{0}', '{1}', '{2}')", id, obj.ToString(), tuple));
+            return true;
+        }
+        [ShiroMethod("dbLoad", 1)]
+        public Token dbLoad(string id)
+        {
+            if (sqLiteCon == null)
+                throw new ShiroException("[In DB Library] Attempt to load from unopened SQLite database");
+
+            SQLiteCommand command = new SQLiteCommand("select Value, Tuple from shiroObjectStore where ID='" + id + "'", sqLiteCon);
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            if(reader.Read())
+            {
+                string val = reader[0].ToString();
+                var retVal = Token.FromString(val);
+                try
+                {
+                    retVal.tuple =
+                        new List<string>(reader[1].ToString()
+                            .Split(new string[] {" | "}, StringSplitOptions.RemoveEmptyEntries));
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+
+                return retVal;
+            }
+            return Token.FromString("0");
+        }
+
+        [ShiroMethod("dbQ", 1)]
+        public Token dbQuery(string sql)
+        {
+            if (sqLiteCon == null)
+				throw new ShiroException("[In DB Library] Attempt to query unopened SQLite database");
+
+            SQLiteCommand command = new SQLiteCommand(sql, sqLiteCon);
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            List<string> tuple = new List<string>(); ;
+            List<Token> table = new List<Token>();
+            while (reader.Read())
+            {
+                if (tuple.Count == 0)
+                    for (int i = 0; i < reader.FieldCount; i++)
+                        tuple.Add(reader.GetName(i));
+
+                Token row = new Token();
+                row.tuple = tuple;
+                row.vt = Shiro.Interpreter.ValueType.List;
+                row.list = new List<Token>();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                    row.list.Add(Token.FromString(reader[i].ToString()));
+                table.Add(row);
+            }
+
+            Token retVal = new Token();
+            retVal.vt = Interpreter.ValueType.List;
+            retVal.tt = TokenType.Value;
+            retVal.list = table;
+
+            return retVal;
+        }
+
+        [ShiroMethod("dbExec", 1)]
+        public bool dbExec(string query)
+        {
+            if (sqLiteCon == null)
+                return false;
+
+            var command = new SQLiteCommand(query, sqLiteCon);
+            command.ExecuteNonQuery();
+            return true;
+        }
+
+        #endregion
 
         #region Basics (Procedural DB Access)
 

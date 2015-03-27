@@ -9,7 +9,7 @@ namespace Shiro
 {
     public class ShiroInterpret
     {
-        public string ShiroVersion = "0.9.0";
+        public string ShiroVersion = "0.9.1";
         
         public Parser Parser = new Parser();
         protected Scanner Scanner = new Scanner();
