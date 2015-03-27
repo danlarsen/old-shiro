@@ -1,0 +1,22 @@
+﻿use Std
+use SQL
+
+try {
+
+	CONS_DefaultDB = "Default.db"
+
+	def dbDefault() {
+		dbClose()
+		return dbOpen(CONS_DefaultDB)
+	}
+
+	class ICanSave = {
+		save: def(id){
+			dbClose()
+			dbOpen(CONS_DefaultDB)
+			dbSave(id, this)
+		}
+	}
+
+
+} catch e { persDuped = true }
